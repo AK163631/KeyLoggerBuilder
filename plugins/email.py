@@ -14,4 +14,4 @@ class Email(PluginBase):
         self.interval = TimeDelta().map[interval]
 
     def write(self, date_time, window, key):
-        pass
+        print(key)

@@ -21,10 +21,14 @@ class PluginManager:
     _CONFIG_AES_PASSWORD: str = ""  # OVER WRITTEN
 
     def __init__(self):
+        """
         if self._CONFIG_AES_PASSWORD:
             config = self.decrypt_config()
         else:
             config = json.load(open(self._CONFIG_FILE, "r"))
+        """
+
+        config = {"plugin_name": "email", "plugin_config": {"email": "me@memail.com"}}
 
         plugin = inspect.getmembers(
             importlib.import_module("plugins." + config["plugin_name"]), inspect.isclass)[0][1]
