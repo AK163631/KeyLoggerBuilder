@@ -28,17 +28,18 @@ class PluginManager:
 
         plugin = inspect.getmembers(
             importlib.import_module("plugins." + config["plugin_name"]), inspect.isclass)[0][1]
-        self.plugin = plugin(**config["plugin_config"])  # type: PluginBase
+        self.__plugin = plugin(**config["plugin_config"])  # type: PluginBase
 
         if not issubclass(self.plugin.__class__, PluginBase):  # check if plugin is subclass of PluginBase
             raise Exception(f"{self.plugin.__class__} is not sub class of PluginBase")
 
     def decrypt_config(self) -> dict:
-        from crypto import Crypto
+        from plugins.utils.crypto import Crypto
         crypto = Crypto(self._CONFIG_AES_PASSWORD)
         return json.loads(crypto.decrypt(open(self._CONFIG_FILE, "rb").read()))
 
-    def write(self, *args):
-        self.plugin.write(*args)
+    @property
+    def plugin(self) -> PluginBase:
+        return self.__plugin
 
 # PluginManager()
