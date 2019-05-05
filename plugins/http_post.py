@@ -6,7 +6,7 @@ import requests
 from plugins.utils.time_delta import TimeDelta
 
 
-class Http(PluginBase):
+class HttpPost(PluginBase):
 
     def __init__(self, url=None, headers=None, interval="on_press"):
         if url is None:

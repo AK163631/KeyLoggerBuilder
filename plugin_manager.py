@@ -28,11 +28,22 @@ class PluginManager:
             config = json.load(open(self._CONFIG_FILE, "r"))
         """
 
-        config = {"plugin_name": "email", "plugin_config": {"email": "me@memail.com"}}
+        config = {"plugin_name": "http_server", "class_name": "HttpServer", "plugin_config": {}}
 
-        plugin = inspect.getmembers(
-            importlib.import_module("plugins." + config["plugin_name"]), inspect.isclass)[0][1]
-        self.__plugin = plugin(**config["plugin_config"])  # type: PluginBase
+        class_members = inspect.getmembers(
+            importlib.import_module("plugins." + config["plugin_name"]), inspect.isclass)
+
+        if "class_name" in config.keys():
+            for name, class_ in class_members:
+                if name == config["class_name"]:
+                    plugin_class = class_
+                    break
+            else:
+                raise Exception(f"plugin not found {config['class_name']} in {config['plugin_name']}")
+        else:
+            plugin_class = class_members[0][1]  # assume class will be first found in module
+
+        self.__plugin = plugin_class(**config["plugin_config"])  # type: PluginBase
 
         if not issubclass(self.plugin.__class__, PluginBase):  # check if plugin is subclass of PluginBase
             raise Exception(f"{self.plugin.__class__} is not sub class of PluginBase")

